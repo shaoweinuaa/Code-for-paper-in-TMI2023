@@ -12,13 +12,13 @@ def maybe_num_nodes(edge_index, num_nodes=None):
         return max(edge_index.size(0), edge_index.size(1))
 
 def filter_adj(edge_index, edge_attr, perm, num_nodes):
-    num_nodes = maybe_num_nodes(edge_index, num_nodes) # 获得更新过后的节点的数量
+    num_nodes = maybe_num_nodes(edge_index, num_nodes)
     mask = perm.new_full((num_nodes,), -1)
     i = torch.arange(perm.size(0), dtype=torch.long, device=perm.device)
-    mask[perm] = i  # 原来的节点是现在的哪个节点，每个位置代表原来节点在新邻接矩阵中的位置  mask[0] = 1 表示原来的第0个点是现在的第1个点
+    mask[perm] = i  
     mask1 = mask.clone().detach()
     row, col = edge_index
-    row, col = mask[row], mask[col]  # 更新row,col
+    row, col = mask[row], mask[col] 
     mask = (row >= 0) & (col >= 0)
     row, col = row[mask], col[mask]
     if edge_attr is not None:
