@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-def xavier_init(m):  # 将所有权重参数初始化为标准差为0.01的高斯随机变量，且将偏置参数设置为0
+def xavier_init(m):  
     if type(m) == nn.Linear:
         nn.init.xavier_normal_(m.weight)
         if m.bias is not None:
@@ -13,9 +13,9 @@ class fusion(nn.Module):
         super(fusion, self).__init__()
 
         self.attention = nn.Sequential(
-            nn.Linear(config ,  128),  # V
+            nn.Linear(config ,  128),  
             nn.Tanh(),
-            nn.Linear(128 , 1) # W
+            nn.Linear(128 , 1) 
         )
         self.attention.apply(xavier_init)
 
