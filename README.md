@@ -10,5 +10,5 @@ Pathological Images and Multi-omics Data'.
 python BRCA_dataset.py  
 By run BRCA_dataset.py, you can generate 'BRCA_dataset.pickle'  
 ### Main
-The division for the dataset can be found in "BRCA_Dataset.xlsx"   
+The training/test split for our method can be found in "BRCA_Dataset.xlsx"   
 python BRCA_TMI.py
