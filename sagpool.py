@@ -1,10 +1,3 @@
-"""
-原始来源：https://github.com/dmlc/dgl/tree/master/examples/pytorch/sagpool
-
-因原版本存在类型转换的BUG，故对SAGPool类中的forward做了改动，标记在 # TODO 处
-
-"""
-
 import torch
 import torch.nn
 import torch.nn.functional as F
@@ -45,7 +38,6 @@ def get_stats(array, conf_interval=False, name=None, stdout=False, logout=False)
     else:
         err_bound = std
 
-    # log and print
     if name is None:
         name = "array {}".format(id(array))
     log = "{}: {:.4f}(+-{:.4f})".format(name, center, err_bound)
