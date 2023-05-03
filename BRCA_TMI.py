@@ -37,8 +37,8 @@ def GCCA_loss(H_list):
 
         assert torch.isnan(H).sum().item() == 0
 
-        o_shape = H.size(0)  # N
-        m = H.size(1)  # out_dim
+        o_shape = H.size(0) 
+        m = H.size(1) 
 
         Hbar = H - H.mean(dim=1).repeat(m, 1).view(-1, m)
         assert torch.isnan(Hbar).sum().item() == 0
@@ -76,32 +76,6 @@ def GCCA_loss(H_list):
 
     assert torch.isnan(M_tilde).sum().item() == 0
 
-    # Q, R = M_tilde.qr()
-
-    # assert torch.isnan(R).sum().item() == 0
-    # assert torch.isnan(Q).sum().item() == 0
-
-    # U, lbda, _ = R.svd(some=False, compute_uv=True)
-
-    # assert torch.isnan(U).sum().item() == 0
-    # assert torch.isnan(lbda).sum().item() == 0
-
-    # G = Q.mm(U[:,:top_k])
-    # assert torch.isnan(G).sum().item() == 0
-
-    # U = [] # Mapping from views to latent space
-
-    # # Get mapping to shared space
-    # views = H_list
-    # F = [H.shape[0] for H in H_list] # features per view
-    # for idx, (f, view) in enumerate(zip(F, views)):
-    #     _, R = torch.qr(view)
-    #     Cjj_inv = torch.inverse( (R.T.mm(R) + eps * torch.eye( view.shape[1], device=view.device)) )
-    #     assert torch.isnan(Cjj_inv).sum().item() == 0
-    #     pinv = Cjj_inv.mm( view.T)
-
-    #     U.append(pinv.mm( G ))
-
     _, S, _ = M_tilde.svd(some=True)
 
     assert torch.isnan(S).sum().item() == 0
@@ -124,7 +98,7 @@ def accuracy(output, labels):
 def accuracy_cox(hazards, labels):
     # This accuracy is based on estimated survival events against true survival events
     hazardsdata = hazards.cpu().numpy().reshape(-1)
-    median = np.median(hazardsdata)  # 中位数 阈值
+    median = np.median(hazardsdata)  
     hazards_dichotomize = np.zeros([len(hazardsdata)], dtype=int)
     hazards_dichotomize[hazardsdata > median] = 1
     labels = labels.data.cpu().numpy()
@@ -133,18 +107,18 @@ def accuracy_cox(hazards, labels):
 
 def cox_log_rank(hazards, labels, survtime_all):
     hazardsdata = hazards.cpu().numpy().reshape(-1)
-    median = np.median(hazardsdata)  # 中位数 阈值
+    median = np.median(hazardsdata) 
     hazards_dichotomize = np.zeros([len(hazardsdata)], dtype=int)
-    hazards_dichotomize[hazardsdata > median] = 1  # pred 二分
+    hazards_dichotomize[hazardsdata > median] = 1 
     survtime_all = survtime_all.data.cpu().numpy().reshape(-1)
     idx = hazards_dichotomize == 0
     labels = labels.data.cpu().numpy()
-    T1 = survtime_all[idx]  # low hazard pred --> survtime
-    T2 = survtime_all[~idx]  # high hazard pred --> srvtm T
-    E1 = labels[idx]  # low pred-true
-    E2 = labels[~idx]  # high pred-true
+    T1 = survtime_all[idx] 
+    T2 = survtime_all[~idx] 
+    E1 = labels[idx] 
+    E2 = labels[~idx]  
     results = logrank_test(T1, T2, event_observed_A=E1, event_observed_B=E2)
-    pvalue_pred = results.p_value  # p
+    pvalue_pred = results.p_value
     return (pvalue_pred)
 
 def CIndex(hazards, labels, survtime_all):
@@ -202,16 +176,16 @@ def test(model,fsmodel,fsmodelmiRNA, sa,layer1,datasets,verbose):
             lbl.to(args.device)
             survtime.to(args.device)
             fs = mrna
-            fs = maxmin(fs)  # RNA原始特征
+            fs = maxmin(fs)  
 
             fs1 = mirna
-            fs1 = maxmin(fs1)  # miRNA原始特征
+            fs1 = maxmin(fs1)  
 
             gs = gs.to(args.device)
             g, code, lbl_pred, atten_final, edges = model(gs)
 
-            T, featureGene = fsmodel(fs.float())  # 基因特征
-            T1, featureGene1 = fsmodelmiRNA(fs1.float())  # miRNA特征
+            T, featureGene = fsmodel(fs.float()) 
+            T1, featureGene1 = fsmodelmiRNA(fs1.float())  
 
             Hlist = []
             Hlist.append(code)
@@ -285,16 +259,16 @@ def val(model, fsmodel, fsmodelmiRNA, sa, layer, datasets, verbose):
             lbl.to(args.device)
             survtime.to(args.device)
             fs = mrna
-            fs = maxmin(fs)  # RNA原始特征
+            fs = maxmin(fs) 
 
             fs1 = mirna
-            fs1 = maxmin(fs1)  # miRNA原始特征
+            fs1 = maxmin(fs1)  
 
             gs = gs.to(args.device)
             g, code, lbl_pred, atten_final, edges = model(gs)
 
-            T, featureGene = fsmodel(fs.float())  # 基因特征
-            T1, featureGene1 = fsmodelmiRNA(fs1.float())  # miRNA特征
+            T, featureGene = fsmodel(fs.float())  
+            T1, featureGene1 = fsmodelmiRNA(fs1.float())  
 
             Hlist = []
             Hlist.append(code)
@@ -367,15 +341,14 @@ def maxmin(tensor):
     min = torch.min(tensor)
     return (tensor-max)/(max-min)
 
-class Linear(nn.Module): # 继承nn.Module
+class Linear(nn.Module): 
     def __init__(self,in_features, out_features):
-        super(Linear,self).__init__() # 等价于nn.Module.__init__(self)
+        super(Linear,self).__init__()
         self.w = nn.Parameter(torch.randn(in_features,out_features)).to(args.device)
         self.b = nn.Parameter(torch.randn(out_features)).to(args.device)
 
     def forward(self, x):
-        x = x.mm(self.w) #矩阵相乘 x*w
-        # torch.nn.PReLU()
+        x = x.mm(self.w)    
         x = maxmin(x)
         return x+self.b.expand_as(x)
 
@@ -445,7 +418,7 @@ if __name__ == "__main__":
                     classifier=nn.Sequential(nn.Linear(512, 1), nn.Sigmoid())
                 ).to(args.device)
 
-                fsmodel = models.SelectorMLP(  # feature selection model for RNAseq
+                fsmodel = models.SelectorMLP(  
                     input_layer='concrete_selector',
                     k=10,
                     input_size=57,
@@ -453,7 +426,7 @@ if __name__ == "__main__":
                     hidden=[512, 512],
                     activation='elu').to(args.device)
 
-                fsmodelmiRNA = models.SelectorMLP(  # feature selection model for miRNAseq
+                fsmodelmiRNA = models.SelectorMLP( 
                     input_layer='concrete_selector',
                     k=10,
                     input_size=12,
@@ -492,7 +465,6 @@ if __name__ == "__main__":
                 measure = True
                 num_epochs = args.epochs
 
-                #开始训练
                 epoch_number = 1
                 for epoch in range(args.epochs):
                     model.train()
@@ -507,15 +479,15 @@ if __name__ == "__main__":
                     loss_nn_sum = 0
                     iter = 0
                     for tags, lbl, survtime, gs, mrna, mirna  in train_loader:
-                        optimizer.zero_grad()  # zero the gradient buffer
+                        optimizer.zero_grad() 
                         lbl.to(args.device)
                         survtime.to(args.device)
 
                         fs = mrna
-                        fs = maxmin(fs)# RNA原始特征
+                        fs = maxmin(fs)
 
                         fs1 = mirna
-                        fs1 = maxmin(fs1)# miRNA原始特征
+                        fs1 = maxmin(fs1)
 
                         gs = gs.to(args.device)
                         g, code, lbl_pred, atten_final, edges = model(gs)
@@ -523,8 +495,8 @@ if __name__ == "__main__":
 
                         genefeaturematrix = fs
 
-                        T,featureGene = fsmodel(genefeaturematrix.float())  # 基因特征
-                        T1,featureGene1 = fsmodelmiRNA(fs1.float())  # miRNA特征
+                        T,featureGene = fsmodel(genefeaturematrix.float()) 
+                        T1,featureGene1 = fsmodelmiRNA(fs1.float()) 
                         Hlist = []
                         Hlist.append(code)
                         Hlist.append(featureGene)
@@ -545,7 +517,7 @@ if __name__ == "__main__":
                             lbl_pred_all = torch.cat([lbl_pred_all, lbl_pred])
                             lbl_all = torch.cat([lbl_all, lbl])
                             survtime_all = torch.cat([survtime_all, survtime])
-                            code_final = torch.cat([code_final, output])  # code 隐层
+                            code_final = torch.cat([code_final, output]) 
 
                         current_batch_len = len(survtime)
                         R_matrix_train = np.zeros([current_batch_len, current_batch_len], dtype=int)
@@ -558,7 +530,7 @@ if __name__ == "__main__":
                         train_ystatus = lbl
                         theta = lbl_pred.reshape(-1)
                         exp_theta = torch.exp(theta)
-                        loss_nn = -torch.mean((theta - torch.log(torch.sum(exp_theta * train_R, dim=1))) * train_ystatus.float())  # LOSS
+                        loss_nn = -torch.mean((theta - torch.log(torch.sum(exp_theta * train_R, dim=1))) * train_ystatus.float())
                         loss_nn = loss_nn - DGCCA_loss * 1e-3
                         loss = loss_nn
                         loss_nn_sum = loss_nn_sum + loss_nn.data.item()
@@ -607,5 +579,5 @@ if __name__ == "__main__":
 
                     epoch_number = epoch_number + 1
                 with open("BRCA_TMI.txt", "a") as f:
-                    f.write("\n一折结束,本折C_index值为:{:.4f},AUC值为{:.4f}：".format(c_index_test, aucvalue))
+                    f.write("\nC_index:{:.4f},AUC{:.4f}：".format(c_index_test, aucvalue))
 
