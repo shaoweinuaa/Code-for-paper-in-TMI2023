@@ -91,14 +91,9 @@ def getPerson(personFolder, filterFeatures=None) -> list:
 
 def createGraphByKnn(pos, feats, k, ndata=None):
    
-
-    
-
     def knn(pos, k=20):
         
-
         def calc_dist(x0, y0, x1, y1):
-            
             return (x0 - x1) ** 2 + (y0 - y1) ** 2
 
         if pos.shape[0] < k:
