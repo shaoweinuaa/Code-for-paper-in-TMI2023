@@ -43,7 +43,7 @@ def handleXls(excel_url: str, verbose=True) -> pd.DataFrame:
   
     xls['patient.follow_ups.follow_up.vital_status'] = np.int0(
         xls['patient.follow_ups.follow_up.vital_status'] != "alive")
-    #xls['patient.follow_ups.follow_up.vital_status']=[1 if random.random()>0.5 else 0 for i in range(len(xls['patient.follow_ups.follow_up.vital_status']))]
+    
     if verbose:
         print("->", set(xls['patient.follow_ups.follow_up.vital_status']))
     if verbose:
@@ -63,8 +63,7 @@ def handleXls(excel_url: str, verbose=True) -> pd.DataFrame:
 def getPerson(personFolder, filterFeatures=None) -> list:
    
     def getFeature(cellFolder, label, filter=None):
-        # cellFolder : 细胞文件夹，如 .../l/ ,.../s/
-        # filter=[ None | lambda no,x,y:Boolean ] 筛选加入列表的patch
+       
         pos = []
         feas = []
         labels = []
@@ -73,22 +72,20 @@ def getPerson(personFolder, filterFeatures=None) -> list:
             no, x, y = [int(i) for i in cell.split(".png")[0].split("_")]
             if (filter is not None) and (filter(no, x, y) == False): continue
            
-
-            # fea = np.load(os.path.join(cellFolder, cell))["feature"][0]
             fea = np.load(os.path.join(cellFolder, cell))
             pos.append([x, y])
             feas.append(fea)
             labels.append(label)
         return np.array(pos), np.array(feas), np.array(labels)
 
-    l_pos, l_fea, l_labels = getFeature(os.path.join(personFolder, "l"), 0, filterFeatures)  # 淋巴细胞 300
-    s_pos, s_fea, s_labels = getFeature(os.path.join(personFolder, "s"), 2, filterFeatures)  # 基质细胞 300
-    t_pos, t_fea, t_labels = getFeature(os.path.join(personFolder, "t"), 1, filterFeatures)  # 肿瘤细胞 300
+    l_pos, l_fea, l_labels = getFeature(os.path.join(personFolder, "l"), 0, filterFeatures)  
+    s_pos, s_fea, s_labels = getFeature(os.path.join(personFolder, "s"), 2, filterFeatures)  
+    t_pos, t_fea, t_labels = getFeature(os.path.join(personFolder, "t"), 1, filterFeatures)  
    
     return [
-        np.concatenate((l_pos, t_pos)),  # 位置信息
-        np.concatenate((l_fea, t_fea)),  # 特征信息
-        np.concatenate((l_labels, t_labels))  # 标签信息
+        np.concatenate((l_pos, t_pos)),  
+        np.concatenate((l_fea, t_fea)),  
+        np.concatenate((l_labels, t_labels))  
     ]
 
 
@@ -101,8 +98,7 @@ def createGraphByKnn(pos, feats, k, ndata=None):
         
 
         def calc_dist(x0, y0, x1, y1):
-            # 计算xy欧式距离的平方
-            # return (x-y)^2
+            
             return (x0 - x1) ** 2 + (y0 - y1) ** 2
 
         if pos.shape[0] < k:
@@ -126,7 +122,7 @@ def createGraphByKnn(pos, feats, k, ndata=None):
             maxKArgs = np.argpartition(Dist[i], k + 1)[:k + 1]
             maxk.append(maxKArgs)
             for j in maxKArgs:
-                # if i==j:continue
+               
                 edges.append([i, j])
                 if ndata is not None:
                    
@@ -146,7 +142,7 @@ def createGraphByKnn(pos, feats, k, ndata=None):
                     else:
                         Strength.append(2)
                 elif edge_value == 2: 
-                    # 判断[temp,i]之间有边
+                    
                     if i in maxk[temp]:
                         Strength.append(1)
                     else:
